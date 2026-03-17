@@ -1,4 +1,4 @@
-# SecureChat
+# LocalCrypt
 Real-time encrypted CLI chat — TCP sockets, SQLite, Fernet AES, Flask REST API
 
 Multiple users connect over a local network, messages are encrypted before storage, and a REST API exposes chat history and stats. Built in Python, no external servers required.
@@ -233,4 +233,4 @@ Client B, C, D print message instantly
 
 ---
 
-*College team project — CSE Semester 4, 2026*
+*College team project 
