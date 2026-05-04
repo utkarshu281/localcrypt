@@ -131,4 +131,7 @@ def start_server():
         threading.Thread(target=handle_client, args=(conn, addr), daemon=True).start()
 
 if __name__ == "__main__":
+    from api import start_api
+    import threading
+    threading.Thread(target=start_api, daemon=True).start()
     start_server()
