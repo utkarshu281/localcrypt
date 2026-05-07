@@ -25,8 +25,10 @@ def register_user(username, password_hash, api_key):
     con = sqlite3.connect(DB_FILE)
     cur = con.cursor()
     try:
-        cur.execute("INSERT INTO users (username, password_hash, api_key) VALUES (?,?,?)",
-                    (username, password_hash, api_key))
+        cur.execute(
+            "INSERT INTO users (username, password_hash, api_key) VALUES (?,?,?)",
+            (username, password_hash, api_key)
+        )
         con.commit()
         return True
     except sqlite3.IntegrityError:
@@ -53,19 +55,29 @@ def get_user_by_api_key(api_key):
 def save_message(username, room, content, private=0):
     con = sqlite3.connect(DB_FILE)
     cur = con.cursor()
-    cur.execute("INSERT INTO messages (username, room, content, private) VALUES (?,?,?,?)",
-                (username, room, content, private))
+    cur.execute(
+        "INSERT INTO messages (username, room, content, private) VALUES (?,?,?,?)",
+        (username, room, content, private)
+    )
     con.commit()
     con.close()
 
+# ✅ FIXED FUNCTION
 def get_messages(room, limit=50):
     con = sqlite3.connect(DB_FILE)
     cur = con.cursor()
-    cur.execute("SELECT username, content, timestamp FROM messages WHERE room = ? ORDER BY timestamp DESC LIMIT ?",
-                (room, limit))
+
+    cur.execute("""
+        SELECT username, content, timestamp
+        FROM messages
+        WHERE room = ?
+        ORDER BY id ASC
+    """, (room,))
+
     result = cur.fetchall()
     con.close()
-    return list(reversed(result))
+
+    return result[-limit:]  # last N messages in correct order
 
 def get_all_users():
     con = sqlite3.connect(DB_FILE)

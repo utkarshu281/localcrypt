@@ -8,7 +8,7 @@ from config import HOST, PORT
 class ChatApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("localcrypt — Encrypted Chat")
+        self.root.title("LocalCrypt — Encrypted Chat")
         self.root.geometry("900x600")
         self.sock = None
         self.running = False
@@ -27,7 +27,7 @@ class ChatApp:
         box = tk.Frame(container, bg="#1a1a1a", padx=30, pady=30)
         box.pack()
 
-        tk.Label(box, text="localcrypt",
+        tk.Label(box, text="Localcrypt",
                  font=("Segoe UI", 22, "bold"),
                  fg="#00ff88", bg="#1a1a1a").pack(pady=(0, 5))
 
@@ -91,6 +91,7 @@ class ChatApp:
 
                         buffer += data
 
+                        # -------- FLOW --------
                         if state == "choice" and "Choice" in buffer:
                             self.sock.send((mode + "\n").encode())
                             buffer = ""
@@ -129,15 +130,23 @@ class ChatApp:
                             buffer = ""
                             state = "chat"
 
+                        # -------- ENTER CHAT --------
                         elif state == "chat":
                             if "Invalid" in buffer:
                                 messagebox.showerror("Error", "Invalid credentials")
                                 return
 
-                            if "Joined" in buffer or "Welcome" in buffer:
+                            if "Connected" in buffer or "Welcome" in buffer or "joined" in buffer:
                                 self.root.after(0, lambda: self.setup_chat_screen(username, room))
+                                self.root.after(0, lambda b=buffer: self.append_message(b))
                                 buffer = ""
                                 state = "messages"
+
+                        # -------- RECEIVE MESSAGES --------
+                        elif state == "messages":
+                            if buffer.strip():
+                                self.root.after(0, lambda b=buffer: self.append_message(b))
+                                buffer = ""
 
                     except:
                         break
@@ -199,21 +208,6 @@ class ChatApp:
                   relief="flat", padx=10,
                   command=self.send_message).pack(side="right", padx=10)
 
-        threading.Thread(target=self.receive_messages, daemon=True).start()
-
-    # ---------------- RECEIVE ----------------
-    def receive_messages(self):
-        while self.running:
-            try:
-                data = self.sock.recv(4096).decode()
-                if not data:
-                    break
-
-                self.root.after(0, lambda d=data: self.append_message(d))
-
-            except:
-                break
-
     # ---------------- DISPLAY ----------------
     def append_message(self, text):
         self.chat_area.config(state="normal")
@@ -240,20 +234,15 @@ class ChatApp:
         if not msg:
             return
 
-        try:
-            self.sock.send((msg + "\n").encode())
-
-            if msg == "/quit":
-                self.running = False
-                self.sock.close()
-                self.root.after(0, self.setup_login_screen)
-                return
-
-            if not msg.startswith("/"):
-                self.append_message(f"{self.username}: {msg}")
-
-        except:
-            pass
+        if msg == "/quit":
+            self.sock.send("/quit\n".encode())
+            self.running = False
+            self.root.after(0, self.setup_login_screen)
+        else:
+            try:
+                self.sock.send(f"{msg}\n".encode())
+            except:
+                pass
 
         self.msg_entry.delete(0, "end")
 
