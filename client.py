@@ -64,7 +64,7 @@ class ChatApp:
                   relief="flat", padx=15, pady=6,
                   command=lambda: self.connect("1")).pack(side="left", padx=5)
 
-    # ---------------- CONNECT ----------------
+    # ---------------- CONNECT(the entire networking brain of clien.py) ----------------
     def connect(self, mode):
         username = self.username_entry.get().strip()
         password = self.password_entry.get().strip()
@@ -81,7 +81,7 @@ class ChatApp:
 
             def handle_server():
                 buffer = ""
-                state = "choice"
+                state = "choice"#using finite sate machine
 
                 while self.running:
                     try:
@@ -96,7 +96,10 @@ class ChatApp:
                             self.sock.send((mode + "\n").encode())
                             buffer = ""
                             state = "reg_user" if mode == "1" else "login_user"
-
+                            # if mode=="1":
+                            #     state="reg_user"
+                            # else:
+                            #     state="login_user"
                         elif state == "reg_user" and "Username" in buffer:
                             self.sock.send((username + "\n").encode())
                             buffer = ""
@@ -178,7 +181,7 @@ class ChatApp:
             bg="#121212",
             fg="#e4e6eb",
             font=("Segoe UI", 11),
-            insertbackground="white",
+            insertbackground="white",#cursor color
             relief="flat",
             state="disabled",
             padx=10,
@@ -225,8 +228,8 @@ class ChatApp:
             else:
                 self.chat_area.insert("end", line + "\n", "other")
 
-        self.chat_area.config(state="disabled")
-        self.chat_area.see("end")
+        self.chat_area.config(state="disabled")#user cannot edit chat history after edit
+        self.chat_area.see("end")#scroll to latest message
 
     # ---------------- SEND ----------------
     def send_message(self, event=None):
